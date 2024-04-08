@@ -1,0 +1,4 @@
+module.exports.dashboardController = require('../dashboard.controller');
+module.exports.userController = require('../user.controller');
+module.exports.driverController = require('../driver.controller');
+module.exports.detailsController = require('../detail.controller');

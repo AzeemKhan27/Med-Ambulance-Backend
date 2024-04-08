@@ -1,0 +1,25 @@
+module.exports = app => {
+
+   const userRoutes = require("./user.routes");
+  //const userTripRoutres = require("./mytrip.routes");
+  const driverRoutes = require("./driver.routes");
+  const Dlicense = require("./dlicense.routes");
+  const personalRoutes = require("./personal.routes");
+  const ambulanceRoutes = require("./ambulance.routes");
+  const adminRoutes = require ("./admin.routes");
+   
+  
+  
+  // route Middlewares
+
+  app.use("/user", userRoutes); 
+  //app.use("/myTripRegister", userTripRoutres);
+  app.use("/driver",driverRoutes);
+  app.use("/Dlicense", Dlicense);
+  app.use("/personal_Details",personalRoutes);
+  app.use("/ambulanceInfo",ambulanceRoutes);
+  app.use("/dashboard",adminRoutes);
+  
+  
+};
+  

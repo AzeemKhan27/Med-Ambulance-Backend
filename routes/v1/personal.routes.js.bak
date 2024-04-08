@@ -1,0 +1,48 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const router = require("express").Router();
+const { persIdupdate,isRequestValidated } = require('../../validation/validations');
+const { personalID } = require("../../controllers/detail.controller");
+<<<<<<< HEAD
+=======
+const verifyAuth = require("../../middleware/auth");
+
+>>>>>>> parent of 0c4fe36 (notification)
+
+var multer  = require('multer');
+var path = require("path");
+
+var storage = multer.diskStorage({
+  destination: './public/uploads/ID',
+  filename: function (req, file, cb) {
+      // console.log("user name mobile ==== ",req.filename);
+    //cb(null, file.fieldname + '_' + Date.now()+path.extname(file.originalname));
+    console.log('multer' + JSON.stringify(file));
+  cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '')}`);
+  }
+})
+  const fileFilter = (req,file,cb)=>{
+    // console.log('11111',file.mimetype);
+      if(file.mimetype === 'application/pdf' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'){
+      cb(null,true)
+      }else{
+      cb(new Error('Not support file format'),false)
+      }
+  }
+
+const upload = multer({
+  dest: './',
+  storage: storage,
+});                                  
+
+
+                             
+//______________________________Personal_ID___________________________//
+                       
+router.post("/pId",upload.any("image",2), persIdupdate,isRequestValidated,personalID);
+
+                                  
+//____________________________________________________________________//
+
+module.exports = router;

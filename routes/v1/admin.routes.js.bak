@@ -1,0 +1,23 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const router = require("express").Router();
+const {addAdmin , admindelete , adminview , updateadmindata , AddFare , 
+    allfarelist} = require("../../controllers/dashboard.controller");
+
+//_________________________________________________________________________//
+
+router.post("/subAdmin",addAdmin);
+
+router.get("/:id",adminview);
+
+router.put("/update/:id",updateadmindata);
+
+router.delete("/:id", admindelete);
+
+router.post("/addfare", AddFare);
+
+router.get("/allfare", allfarelist);
+
+
+module.exports = router;

@@ -1,0 +1,45 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const router = require("express").Router();
+var multer  = require('multer');
+var path = require("path");
+const { ambulanceInfoUpdate,isRequestValidated } = require('../../validation/validations');
+const { ambulanceINFO  } = require("../../controllers/detail.controller");
+const {getallambulance} = require("../../controllers/dashboard.controller");
+
+
+
+//_________________________________IMAGE_____________________________//
+
+var storage = multer.diskStorage({
+  destination: './public/uploads/Ambulance_Img',
+  filename: function (req, file, cb) {
+      // console.log("user name mobile ==== ",req.filename);
+    cb(null, file.fieldname + '_' + Date.now()+path.extname(file.originalname));
+  }
+})
+  const fileFilter = (req,file,cb)=>{
+    // console.log('11111',file.mimetype);
+      if(file.mimetype === 'application/pdf' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'){
+      cb(null,true)
+      }else{
+      cb(new Error('Not support file format'),false)
+      }
+  }
+var upload = multer({ storage: storage ,
+  limits:{
+
+    fieldSize:1024 *1024 * 5,
+      },
+      fileFilter:fileFilter
+});                              
+
+//________________________________________Image_End___________________________________________// 
+
+
+router.post("/Info",upload.single("image"),ambulanceINFO ,ambulanceInfoUpdate,isRequestValidated);
+
+router.get("/ambulist", getallambulance);
+
+module.exports = router;

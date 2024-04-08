@@ -1,0 +1,7 @@
+module.exports.ambulanceinfos = require('./ambulanceInfos.models');
+module.exports.Dashboard = require('./dashboard.models');
+module.exports.DriverRegister = require('./driverRegister.models');
+module.exports.fare = require('../model/fare.models');
+module.exports.license = require('./license.models');
+module.exports.Personal_Id = require('./personal_Id.models');
+module.exports.UserRegister = require('./userRegister.model');

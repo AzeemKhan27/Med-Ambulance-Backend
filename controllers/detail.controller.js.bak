@@ -1,0 +1,173 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const { ambulanceinfos, Personal_Id, license } = require('../model');
+
+
+//----------------------------------Driver License ---------------------------------------//
+
+exports.Driverlicense = async (req, res, next) => {  
+    console.log(req.file);
+    let Driverlicense = await license.findOne({
+      DriverId : req.body.DriverId,    
+    });
+    console.log(Driverlicense);
+    if(Driverlicense != null){
+      return res.status(200).json({ 
+        statusCode : 400,
+        status : false,
+        message : "DriverId already exists"
+      });
+    }else{
+      const log =await license({
+        Driverid: req.body.Driverid,
+        licensenumber : req.body.licensenumber,
+        image : req.fieldname,
+        //categoryImg:req.body.image ,
+        imagePath: req.path
+      });
+      console.log(req.body.image);
+      //license.findOne({Driverid:req.body.Driverid}).then((Driver)=>{ 
+      log.save((err,save)=>{
+          //console.log('save',save);    
+              if(err){
+                  console.log('err',err);        
+                  return res.json({status : 400, message : 'License number field can not empty'});
+              }else{
+                return res.json({
+                  status: true,
+                  statusCode : 200,
+                  message : 'Data updated successfull',
+                  data : {
+                    //DriverId : license._id,
+                    // licensenumber : req.body.licensenumber
+                    id : save._id,
+                    Driverid: req.body.Driverid,
+                    licensenumber : req.body.licensenumber
+                  }
+                }||data);
+              }
+           }); 
+    }
+   // create NEW 
+   
+  }
+  //____________________________________Personal_ID_________________________________________//
+  
+  
+  exports.personalID = async (req, res, next) => {  
+    
+    var persId = await Personal_Id.findOne({
+      DriverId : req.body.DriverId,
+    });
+  
+    if(persId != null){
+      return res.status(200).json({
+      status :  false,
+      statusCode : 400,  
+      message : "DriverId already exists",
+      //data : null
+      }); 
+    }
+    
+   console.log(persId,'debugging success line 40-50');
+  
+   // create NEW 
+   const personal = await Personal_Id({
+      DriverId : req.body.DriverId,
+      idType: req.body.idType,
+      personal_Id : req.body.personal_Id
+   });
+  
+  //try catch
+   try {
+    var savedpers = await personal.save();
+    console.log('debuging sucessfully on 40-50 line',savedpers);
+   // res.send(savedUser);
+   res.json({
+     status: true,
+     statusCode : 200,
+      message : 'Data Uploaded Sucessfully',
+      data : {id : savedpers._id,
+              DriverId : req.body.DriverId,
+              idType : savedpers.idType,
+              personal_id : savedpers.personal_Id,
+              },
+      } ||data);
+  
+  } catch (error) {
+    res.status(400).send(error);
+    console.log(error,'debugging success line 45-50');
+  }
+  }
+  
+  //_____________________________END Personal ID_________________________________//
+  
+  //_____________________________________________________________________________//
+  
+  //____________________________AMBULANCE______INFO______________________________//
+  
+  exports.ambulanceINFO = async (req, res, next) => {  
+  
+    var ambinfomation = await ambulanceinfos.findOne({
+      DriverId : req.body.DriverId,
+    });
+    if (ambinfomation != null) {
+      return res.status(200).json({
+        status :  false,
+        statusCode : 400,  
+        message : "DriverId already exists",
+        //data : null
+      }); 
+    }
+    const log = await ambulanceinfos({
+            image : req.body.image,
+            DriverId: req.body.DriverId,
+            AmbulanceCategory : req.body.AmbulanceCategory,
+            AmbulanceType : req.body.AmbulanceType,
+            AmbulanceModel : req.body.AmbulanceModel,
+            RegistrationNumber : req.body.RegistrationNumber,
+            FuelType : req.body.FuelType, 
+            ManufacturedDate :  req.body.ManufacturedDate,
+            RegistrationDate : req.body.RegistrationDate
+        });
+          console.log(log,"292-300");
+        
+          //Try Catch
+        
+        try {
+          log.save((err,save)=>{
+            console.log('save',save);    
+                if(err){
+                    console.log('err',err);        
+                    return res.json({status : false, statusCode : 400, 
+                                     message : 'All Fields Are Required',
+                                     data:null});
+                }else{
+                    return res.json({ 
+                         status: true,
+                         statusCode : 200,
+                         message : 'Data Uploaded Successfully',
+                          data : {
+                                  DriverId: req.body.DriverId,
+                                  AmbulanceCategory : req.body.AmbulanceCategory,
+                                  AmbulanceType : req.body.AmbulanceType,
+                                  AmbulanceModel : req.body.AmbulanceModel,
+                                  RegistrationNumber : req.body.RegistrationNumber,
+                                  FuelType : req.body.FuelType,
+                                  ManufacturedDate :  req.body.ManufacturedDate,
+                                  RegistrationDate : req.body.RegistrationDate
+                              }
+                        } ||data);
+                }
+        })
+        } catch (error) {
+          res.status(400).send(error);
+          console.log(error,'debugging success line 45-50');
+        }
+  
+  }       
+  
+  //_____________________________END AMBU INFO____________________________//
+  
+  

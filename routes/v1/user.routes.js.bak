@@ -1,0 +1,46 @@
+'use strict';
+"--unhandled-rejections=strict";
+const express = require('express');
+
+//const router = require("express").Router();
+const {userVerifyUpdate,userRegisterUpdate,isRequestValidated } = require('../../validation/validations');
+const { userRegister, userProfileGetRoutes, userProfileGetByID, userProfileUpdatebyID, 
+  Verifyotp, userLogin,} = require("../../controllers/user.controller");
+//const userController = require("../controllers/user.controller");
+
+const router = express.Router();
+
+//_________________________USER______PROFILE______Start__________________ //
+
+router.post("/Register",userRegister,userRegisterUpdate,isRequestValidated);
+//______________________________GET All listing___________________________//                           
+                              
+router.get("/profile",userProfileGetRoutes);
+
+//____________________ Single_User_Profile__listing________________________//
+                        
+router.get("/profile/:userProfileId",userProfileGetByID);
+
+//_________________________Update And Edit Profile__________________________//
+
+router.put("/profileupdate/:userProfileId",userProfileUpdatebyID);
+
+//_____________________________Router Get OTP______________________________//
+                             
+router.post("/VerifyOTP",Verifyotp,userVerifyUpdate,isRequestValidated);
+
+//__________________________User Login______________________________________//
+
+router.post ("/login",userLogin);
+
+
+//________________________________________________________________________//
+  
+router.get("/logout",async(req, res)=>{
+  res.clearCookie('t');
+  res.json({message : 'logout',
+            statusCode : 200});
+});
+
+module.exports = router;
+                      

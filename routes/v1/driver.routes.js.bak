@@ -1,0 +1,53 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const router = require("express").Router();
+const { registerupdatePass,driverVerifyUpdate,registerupdate,isRequestValidated,
+  loginupdate } = require('../../validation/validations');
+const {forgetPassword, Register,login, verifyOtp,changePwd,fetchingALL, 
+  driverProfileUpdatebyID,driverProfileGetByID,driverProfileGetRoutes} = require("../../controllers/driver.controller");
+const { getalldata, viewdata, 
+        dashboarddata, deletedata } = require("../../controllers/dashboard.controller");
+
+// checking user phone id in database
+//________________________driver Register___________________//
+
+router.post("/Register",registerupdatePass,registerupdate,isRequestValidated,Register); 
+router.post("/forget/password",forgetPassword); 
+
+//________________________driver Login______________________//
+
+router.post ("/login",login,loginupdate,isRequestValidated);
+router.get ("/changePassword/:phone",fetchingALL);       //------->fetch all data from db
+router.put ("/changePassword/:phone",changePwd);         //------->
+router.post("/VerifyOTP",verifyOtp,driverVerifyUpdate,isRequestValidated);
+
+//____________________Driver_Profile_Start______________________//
+
+router.get("/profile",driverProfileGetRoutes);
+router.get("/profile/:driverProfileId",driverProfileGetByID);
+router.put("/profile/:driverProfileId",driverProfileUpdatebyID);
+
+//____________________Driver_profile_End________________________//
+
+//________________________________Admin API Start _____________________//
+
+router.get("/alldata",getalldata);
+
+router.get("/:id",viewdata);
+
+router.put("/update/:DriverId",dashboarddata);
+
+router.delete("/:id", deletedata);
+
+//________________________Admin End______________________//
+
+
+router.get("/logout",async(req, res)=>{
+  res.clearCookie('t');
+
+  res.json({message : 'logout',
+            statusCode : 200});
+});
+
+module.exports = router;

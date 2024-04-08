@@ -1,0 +1,311 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const {DriverRegister} = require("../model");
+const bcrypt = require("bcryptjs");
+const { getRandomPin } = require("../utils/helpers");
+
+exports.Register = async (req, res) => {  
+  
+    var phoneExit = await DriverRegister.findOne(
+      {$or: [ { phone:  req.body.phone},
+      { email:  req.body.email} ] ,});
+    
+    console.log(phoneExit,'debugging success line 16-20');
+  
+    if (phoneExit) return res.status(404).json({
+      status :  false,
+      statusCode : 404,  
+      message : "phone number or email already exists",
+      data : null
+    }); 
+     
+    // hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+   
+      // //get OTP
+    const m_otp = getRandomPin('0123456789',4);
+  
+    // create new user
+    const user = await DriverRegister({
+      phone: req.body.phone,
+      email : req.body.email,
+      m_otp : m_otp,
+      //drivername : req.body.drivername,
+      password:  hashedPassword,
+      deviceType : req.body.deviceType
+    });
+    console.log(user.phone,"user phone 44-50");
+  
+    if (!user.password ) return res.status(200).json({ 
+      statusCode : 400,
+      status : false,
+      message : "All fields are require"});
+  
+    try {
+          var savedUser = await user.save();
+          console.log('debuging sucessfully on 50-60 line',savedUser);
+          // res.send(savedUser);
+          res.json({
+            statusCode : 200,
+            status : true,
+            message : 'Registered Successfully',
+            data : savedUser,
+          } );  
+  
+    } catch (error) {
+      res.status(400).send(error);
+      console.log(error,'debugging success line 45-50');
+    }
+  }
+  //_______________________________forgetPasswrd__________________________//
+
+  exports.forgetPassword = async (req, res,next) => {  
+  
+    let data = await DriverRegister.findOne({
+     $or:[{
+        phone:req.body.phone
+      }]});
+      if(!data) return res.status(200).json({
+        status : false,
+        statusCode : 400,
+        message : 'Something Went Wrong'
+      });
+        res.status(200).json({
+          status : true,
+          statusCode : 200,
+          data : {
+            id: data._id,
+            m_otp : data.m_otp
+          }
+        });
+}
+     //________________________________changePassword______________________//
+
+ exports.changePwd = async (req, res,next) => {
+      try {
+        const driverChangePassword = { 
+           password : req.body.password
+         }
+      console.log(driverChangePassword,"78-110");
+         
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+      const updatedListing = await DriverRegister.findOneAndUpdate(
+        
+          // $set:[{
+          //   // DriverId : req.body.driversId,
+          //   // phone : , 
+          //   password : hashedPassword
+          // }]
+          
+         {phone: req.params.phone},
+         {password : hashedPassword} );
+       console.log(updatedListing,"125-130");
+    
+        if(!updatedListing) 
+            return res.status(200).json({
+              status : false,
+              statusCode : 400,
+              message : 'Phone Number does not registered'
+              });
+              res.status(200).json({
+              status: true,
+              statusCode: 200,
+              message : "Password changed successfully",
+              data : null
+            //   data : {
+            //   //id: updatedListing._id,
+            //   // DriverId : req.body.DriverId,
+            //   // password: req.body.password,
+            //   //email:updatedListing.email,
+            //   // phone : req.params.phone
+            // },
+        });
+      } catch (error) {
+        res.json({ message: error });
+      }
+      }
+
+     //____________________changePassword_End________________________//
+
+      //____________________Fetch DATA_______________________________//
+  
+  exports.fetchingALL =  async (req, res, next) => {
+    try {
+        const driverRegister = await DriverRegister.findById(req.params.DriverId);
+        res.json({
+          status : true,
+          statusCode : 200,
+          message : 'This Is Updated Data',
+            data : {
+                DriverId : driverRegister.DriverId,
+                password:driverRegister.password,
+                email:driverRegister.email,
+                phoneNo : driverRegister.phone||driverRegister},
+          });
+          console.log(userRegister,"105-120");
+    } catch (error) {
+        res.json({ message: error });
+    }
+  }
+  
+//___Driver___Profile___Update____//
+
+exports.driverProfileUpdatebyID = async (req, res, next) => {
+  try {
+    const driverRegister = {
+     // phone: req.body.phone,
+      email: req.body.email,
+      drivername: req.body.drivername
+      
+    }
+    // var savedUserReg = await userRegister.save();
+  console.log(driverRegister,"118-150");
+  const updatesListing = await DriverRegister.updateMany(
+  {_id : req.params.driverProfileId}, {
+    // phone: req.body.phone,
+     email: req.body.email,
+     drivername: req.body.drivername
+   });
+   console.log(updatesListing,"125-130");
+  res.json({
+    status: true,
+    statusCode: 200,
+    message : "update successfully",
+    data : null
+  });
+} catch (error) {
+  res.json({ message: error });
+}
+}
+
+//____All_Listing_Driver____//
+
+exports.driverProfileGetRoutes = async(req, res) => {
+  try {
+      const driverRegister = await DriverRegister.find(req.params.driverProfileId);
+      res.json(driverRegister);
+  } catch (error) {
+      res.json({ message: error });
+  }
+}
+//____Driver_End___________//
+  
+//____Driver__Get_By_ID____//
+
+exports.driverProfileGetByID =  async(req, res) => {
+  try {
+      const driverRegister = await DriverRegister
+      .findById(req.params.driverProfileId)
+      .exec();
+      // res.json(userRegister);
+      res.json({
+        status : true,
+        statusCode : 200,
+        message : 'Your Profile',
+          data : {
+              id: driverRegister._id,
+              DriverId: driverRegister.DriverId,
+              drivername:driverRegister.drivername,
+              email:driverRegister.email,
+              phone : driverRegister.phone ||driverRegister},
+        });
+        console.log(driverRegister,"105-120");
+  } catch (error) {
+      res.json({ message: error });
+  }
+}
+
+//______________________Driver_______Login_____________________________//
+  
+exports.login = async (req, res) => {
+
+  var phoneExit = await DriverRegister.findOne({
+    $or:[
+      {
+        phone: req.body.phone,
+        password :  req.body.password
+      },
+    ]
+  });
+        
+    if(phoneExit == 0)
+      return res.status(200).json({ 
+        statusCode : 400,
+        status : false,
+        message : "Something Went Wrong"
+      });
+ //check user phone id in db
+    const driver = await DriverRegister.findOne({
+       $or:[
+          { 
+            phone: req.body.phone 
+          }
+        ]
+      })
+    .exec();
+    if (!driver) 
+    return res.status(200).json({ 
+      statusCode : 400,
+      status : false,
+      message : "phone number is invalid",
+    }); 
+    console.log(driver,'user login line 66-75');
+
+  const validPass = await bcrypt.compareSync(req.body.password, driver.password); 
+           
+    if (!validPass) 
+    return res.status(404).json({
+      statusCode : 400,
+      status : false,
+      message : "Invalid Password",
+      data : null
+    });  
+          
+    console.log(validPass,'validpass login line 71-80');
+    res.json({
+      statusCode : 200,
+        status : true,
+        message : ' Login  Successfully',
+        data : {
+          id:driver._id
+        },
+    } ||data);
+}
+      
+ //______________________________verifyOtp _________________________//
+                      
+
+ exports.verifyOtp = async(req,res,error)=>{
+  
+    
+  var data = await DriverRegister.findOne({
+        
+          m_otp:req.body.m_otp,
+          // DriverId: req.body.DriverId
+      });
+  
+  console.log(data,"210-120");
+
+  if(!data) return res.json({
+      status : false,
+      statusCode : 400,
+      message : 'Invalid OTP',
+      data :  null
+    });
+    res.json({
+      status : true,
+      statusCode : 200,
+      message : 'Verification Successfully',
+       data : {
+            id:data._id,
+            DriverId :req.body.DriverId,
+            m_otp:req.body.m_otp,
+            phone : data.phone
+        },
+      });
+    }
+
+//____________________________________End_Verify__________________________________________//

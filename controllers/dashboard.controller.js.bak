@@ -1,0 +1,361 @@
+'use strict';
+"--unhandled-rejections=strict";
+const {fare, Dashboard, ambulanceinfos, DriverRegister } = require("../model");
+
+//____________________________Dashboard___________________________//
+
+
+//______________________AllData____________________________________//
+
+
+exports.getalldata = async(req, res) => {
+
+    try {
+        const driverRegister = await DriverRegister.find(req.params.DriverId);
+        res.json(driverRegister);
+    } catch (error) {
+        res.json({ message: error });
+    }
+}
+
+//__________________________View data__________________________________//
+
+exports.viewdata = async(req, res ) => {
+
+    try{
+        const admindata = await DriverRegister.findById(req.params.id);
+        res.json({
+            status : true,
+            statusCode : 200,
+            message : 'View data',
+              data : {
+                id: admindata._id,
+                drivername:admindata.drivername,
+                email:admindata.email,
+                phoneNo : admindata.phone,
+                deviceType : admindata.deviceType||admindata
+            },
+        });
+
+    }catch (error) {
+        res.json({ message: error });
+    }
+}
+
+//_________________________dataupdate_______________________________//
+
+exports.dashboarddata = async (req, res) => {
+
+    try {
+        const  adminRegister = {
+            // phone: req.body.phone,
+            email: req.body.email,
+            name: req.body.name                             
+        }
+        console.log(adminRegister,"118-150");
+        const updatedata = await DriverRegister.updateMany(
+        {_id : req.params.DriverId}, {
+            // phone: req.body.phone,
+            email: req.body.email,
+            drivername: req.body.drivername
+        });
+        console.log(updatedata);
+        res.json({
+            status: true,
+            statusCode: 200,
+            message : "update successfully",
+            data : {
+                id: updatedata._id,
+                email: req.body.email,
+                drivername: req.body.drivername  
+            },
+        });
+    } catch (error) {
+    res.json({ message: error });
+    }
+}
+  
+  //______________________Delete________________________________//
+  
+exports.deletedata = async(req, res) => {
+  
+    const id= req.params.id;
+    try {
+      const result1 = await DriverRegister.findByIdAndDelete(id);
+      console.log(result1);
+      res.json({
+        status: true,
+        statusCode: 200,
+        message : "Delete successfully",
+      });
+    }catch (error) {
+      console.log(error.message);
+      res.json({ message: error });
+    }
+}
+  
+
+//_________________________________________Ambulance Api __________________________//
+
+
+exports.getallambulance = async(req, res) =>{
+
+    try{
+        const results2 = await ambulanceinfos.find(req.params.DriverId);
+        console.log("results2");
+        res.json(results2);
+    }catch (error) {
+        res.json({ message: error });
+    }
+}
+
+//________________________________Add Hospital Admin _________________________________________//
+
+exports.addAdmin = async (req, res) => {  
+  
+    var adminsub = await Dashboard.findOne(
+        {$or: [ { phone:  req.body.phone},
+        { email:  req.body.email} ] ,});
+      
+      console.log(adminsub,'debugging success line 16-20');
+    
+      if (adminsub) return res.status(404).json({
+        status :  false,
+        statusCode : 400,  
+        message : "phone number or email already exists",
+        data : null
+      });   
+      // hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+      const admin = await Dashboard({
+        status: req.body.status,
+        name: req.body.name,
+        gender: req.body.gender,
+        email: req.body.email,
+        password:  hashedPassword,
+        phone: req.body.phone,
+        hospital: req.body.hospital
+      });
+      //console.log(admin.phone,"user phone 44-50");
+    
+      if (!admin.password ) return res.status(200).json({ 
+        statusCode : 400,
+        status : false,
+        message : "All fields are require"});
+    
+      try {
+            var savedadmin = await admin.save();
+            console.log('debuging sucessfully on 50-60 line',savedadmin);
+            // res.send(savedUser);
+            res.json({
+              statusCode : 200,
+              status : true,
+              message : 'Registered Successfully',
+              data : savedadmin,
+            } );  
+    
+      } catch (error) {
+        res.status(400).send(error);
+        console.log(error,'debugging success line 45-50');
+      }
+    
+}
+  
+            //____Delete_____//
+
+exports.admindelete = async(req, res) =>{
+
+    const id= req.params.id;
+    try {
+      const result = await Dashboard.findByIdAndDelete(id);
+      console.log(result);
+      res.json({
+        status: true,
+        statusCode: 200,
+        message : "Delete successfully",
+      });
+    }catch (error) {
+      console.log(error.message);
+      res.json({ message: error });
+    }
+}
+
+
+exports.adminview = async(req, res ) => {
+
+    try{
+        const details1 = await Dashboard.findById(req.params.id);
+        res.json({
+            status : true,
+            statusCode : 200,
+            message : 'View data',
+              data : {
+                id: details1._id,
+                status: details1.status,
+        name: details1.name,
+        gender: details1.gender,
+        email: details1.email,
+        password:  details1.password,
+        phone: details1.phone,
+        hospital: details1.hospital
+            },
+        });
+
+    }catch (error) {
+        res.json({ message: error });
+    }
+}
+
+exports.updateadmindata = async (req, res) => {
+
+    try {
+        const  adminRegister = {
+            status: req.body.status,
+            name: req.body.name,
+            gender: req.body.gender,
+            email: req.body.email,
+            password:  hashedPassword,
+            phone: req.body.phone,
+            hospital: req.body.hospital                            
+        }
+        console.log(adminRegister,"118-150");
+        const updateddata = await Dashboard.updateMany(
+        {_id : req.params.id}, {
+            status: req.body.status,
+            name: req.body.name,
+            gender: req.body.gender,
+            email: req.body.email,
+            password:  hashedPassword,
+            phone: req.body.phone,
+            hospital: req.body.hospital
+        });
+        console.log(updateddata);
+        res.json({
+            status: true,
+            statusCode: 200,
+            message : "update successfully",
+            data : {updateddata
+                // id: updatedata._id,
+                // name: req.body.name,
+                // gender: req.body.gender,
+                // email: req.body.email,
+                // password:  hashedPassword,
+                // phone: req.body.phone,
+                // hospital: req.body.hospital 
+            },
+        });
+    } catch (error) {
+    res.json({ message: error });
+    }
+}
+  
+
+//_____________________________Fare Management ____________________//
+
+exports.AddFare = async (req , res) =>{
+
+    const addfare = await fare({
+        ambulancetype: req.body.ambulancetype,
+        fareperkm: req.body.fareperkm,
+        minimumfare: req.body.minimumfare,
+        minimumdistance: req.body.minimumdistance,
+        waitingfare: req.body.waitingfare,
+      });
+      //console.log(admin.phone,"user phone 44-50");
+    
+      if (!addfare) return res.status(200).json({ 
+        statusCode : 400,
+        status : false,
+        message : "All fields are require"});
+
+      try {
+            var savedaddfare = await addfare.save();
+            //console.log('debuging sucessfully on 50-60 line',savedaddfare);
+            res.json({
+              statusCode : 200,
+              status : true,
+              message : 'Added Successfully',
+              data : savedaddfare,
+            } );  
+    
+      } catch (error) {
+        res.status(400).send(error);
+        console.log(error,'debugging success line 45-50');
+      }
+}
+
+exports.allfarelist = async(req , res) =>{
+
+  try {
+    const farelist = await fare.find(req.params.id);
+      res.json(farelist);
+  }catch (error) {
+      res.json({ message: error });
+    }
+}
+
+exports.faredataupdate = async (req, res) => {
+
+  try {
+      const  faredata = {
+        ambulancetype: req.body.ambulancetype,
+        fareperkm: req.body.fareperkm,
+        minimumfare: req.body.minimumfare,
+        minimumdistance: req.body.minimumdistance,
+        waitingfare: req.body.waitingfare,                          
+      }
+      console.log(faredata,"118-150");
+      const updateedfare = await fare.updateMany(
+      {_id : req.params.id}, {
+        ambulancetype: req.body.ambulancetype,
+        fareperkm: req.body.fareperkm,
+        minimumfare: req.body.minimumfare,
+        minimumdistance: req.body.minimumdistance,
+        waitingfare: req.body.waitingfare,
+      });
+      console.log(updateedfare);
+      res.json({
+          status: true,
+          statusCode: 200,
+          message : "update successfully",
+          data : {updateddata
+              // id: updatedata._id,
+              // name: req.body.name,
+              // gender: req.body.gender,
+              // email: req.body.email,
+              // password:  hashedPassword,
+              // phone: req.body.phone,
+              // hospital: req.body.hospital 
+          },
+      });
+  } catch (error) {
+  res.json({ message: error });
+  }
+}
+
+exports.fareview = async(req, res ) => {
+
+  try{
+      const details2 = await Dashboard.findById(req.params.id);
+      res.json({
+          status : true,
+          statusCode : 200,
+          message : 'View data',
+            data : {
+              id: details2._id,
+              status: details1.status,
+      // name: details1.name,
+      // gender: details1.gender,
+      // email: details1.email,
+      // password:  details1.password,
+      // phone: details1.phone,
+      // hospital: details1.hospital
+          },
+      });
+
+  }catch (error) {
+      res.json({ message: error });
+  }
+}

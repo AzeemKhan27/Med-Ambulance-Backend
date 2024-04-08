@@ -1,0 +1,168 @@
+'use strict';
+"--unhandled-rejections=strict";
+
+const bcrypt = require("bcryptjs");
+const { getRandomPin } = require("../utils/helpers");
+const {UserRegister} = require("../model");
+const { Response } = require('../utils/response');
+
+
+//__________________________________USER________________________________//
+
+//___________________________User_____Register___________________________//
+
+exports.userRegister = async (req, res) => {  
+  
+  try {
+  let phoneExit = await UserRegister.findOne({
+     phone: req.body.phone
+   });
+       
+        //_______get___OTP__Send______//    
+
+   const m_otp = getRandomPin('0123456789',4);
+   //console.log(phoneExit,"19-25");
+
+   if (phoneExit){
+    const result = await UserRegister.findOneAndUpdate({
+      phone: req.body.phone
+  }, { m_otp: m_otp }, { upsert: true });
+    console.log(result);
+
+    return res.status(200).json({
+      status: true,
+      statusCode : 200,  
+      message : "already Registered &  otp send",
+      data :{
+        Id:result._id,
+        OTP : m_otp
+        // phone: req.body.phone,
+        // name : req.body.name,
+        // email : req.body.email 
+     },
+      });
+   }else{
+    const userRegister = new UserRegister({
+      phone: req.body.phone,
+      email : req.body.email,
+      m_otp : m_otp,
+      name : req.body.name 
+    });
+
+    let saveUser = await userRegister.save();
+ 
+      //console.log('savedUserReg 35',savedUserReg);
+    res.json({
+        status : true,
+        statusCode : 200,
+        message : 'Registered successfull',
+        data : {id:saveUser._id,
+        OTP : saveUser.m_otp,
+        phone: req.body.phone,
+        name : req.body.name,
+        email : req.body.email 
+      },
+      });
+    }
+    }catch (error) {
+      res.status(400).send(error);
+    }
+ 
+ //console.log('UserRegister 31 done',userRegister);
+
+}
+//_______________________GET_________________________//
+
+exports.userProfileGetRoutes = async(req, res) => {
+  try {
+      const userRegister = await UserRegister.find(req.params.UserId);
+      res.json(userRegister);
+  } catch (error) {
+      res.json({ message: error });
+  }
+}
+
+//____________________GET___SingleListing______________________//
+
+exports.userProfileGetByID =  async(req, res) => {
+  try {
+      const userRegister = await UserRegister.findById(req.params.userProfileId);
+      // res.json(userRegister);
+      res.json({
+        status : true,
+        statusCode : 200,
+        message : 'Your Profile',
+          data : {
+              // id: userRegister._id,
+              // UserId: userRegister.UserId,
+              // name:userRegister.name,
+              // email:userRegister.email,
+              // phoneNo : userRegister.phone
+              userRegister},
+        });
+       // console.log(userRegister,"105-120");
+  } catch (error) {
+      res.json({ message: error });
+  }
+}
+
+//____________________GET___END______________________//
+
+exports.userProfileUpdatebyID = async (req, res) => {
+  try {
+    const userRegister = {
+      email: req.body.email,
+      name: req.body.name
+      
+    }
+  console.log(userRegister,"118-150");
+  const updateListing = await UserRegister.updateMany(
+  {_id : req.params.userProfileId}, {
+     email: req.body.email,
+     name: req.body.name
+   });
+   console.log(updateListing);
+  res.json({
+    status: true,
+    statusCode: 200,
+    message : "update successfully",
+    data : {
+      id: req.params.userProfileId,
+      email: req.body.email,
+      name: req.body.name
+    },
+  });
+} catch (error) {
+  res.json({ message: error });
+}
+}
+
+//_______________user_Verify_OTP_________________//
+
+exports.Verifyotp = async(req,res)=>{
+  let data1 = await UserRegister.findOne({
+    m_otp:req.body.m_otp,
+    UserId: req.body.UserId
+    
+  });
+  if(!data1) 
+  return res.json({
+    status : false,
+    statusCode : 400,
+    message : 'Invalid OTP'
+    
+  });
+  res.json({
+    status : true,
+    statusCode : 200,
+    message : 'Verification Successfully',
+  });        
+}
+
+//_______________________END__OTP__VERIFY______________________//
+
+exports.userLogin = async (req, res,error) => {       
+  const userRegister = await UserRegister.find({phone: req.body.phone});
+  if (!userRegister)
+   return res.status(400).json({message:"phone numbers is wrong"});
+}
