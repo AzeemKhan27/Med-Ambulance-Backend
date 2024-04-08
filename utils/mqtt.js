@@ -1,22 +1,19 @@
 "use strict";
 
 const { json } = require('body-parser');
-var mqtt = require('mqtt');
+let mqtt = require('mqtt');
+require('dotenv').config()
 
-var options = {
-    host: "198.199.83.132",
-    port: 1883,
-    username: "med",
-    password: "arub%MaTXn^mbW"
-    // port: 1883,
-    // hostname: "192.168.1.79",
-    // username: "mqtt",
-    // password: "mypass"
+let options = {
+    host: process.env.MQTT_HOST,
+    port: process.env.MQTT_PORT,
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD
 }
 
-var jsonObj = {key:'value'};
+let jsonObj = {key:'value'};
 //initialize the MQTT client
-var client = mqtt.connect(options);
+let client = mqtt.connect(options);
 
 //setup the callbacks
 client.on('connect', function () {
